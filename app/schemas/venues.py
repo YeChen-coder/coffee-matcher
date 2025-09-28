@@ -9,6 +9,7 @@ class VenueBase(SQLModel):
     price_range: str
     location: str
     description: Optional[str] = None
+    created_by_id: Optional[int] = None
 
 
 class VenueCreate(VenueBase):
@@ -21,6 +22,7 @@ class VenueUpdate(SQLModel):
     price_range: Optional[str] = None
     location: Optional[str] = None
     description: Optional[str] = None
+    created_by_id: Optional[int] = None
 
 
 class VenueRead(VenueBase):

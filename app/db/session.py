@@ -16,6 +16,13 @@ _engine = create_engine(
 
 def init_db() -> None:
     """Create the database tables."""
+    # Import models to make sure SQLModel sees table definitions before create_all
+    import app.models.user  # noqa: F401
+    import app.models.timeslot  # noqa: F401
+    import app.models.venue  # noqa: F401
+    import app.models.match_request  # noqa: F401
+    import app.models.user_preference  # noqa: F401
+
     SQLModel.metadata.create_all(_engine)
 
 

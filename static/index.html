@@ -1,119 +1,240 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Matcher - 职场社交匹配</title>
+    <title>Coffee Matcher</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>☕ Coffee Matcher</h1>
-            <p>专业人士的咖啡/聚餐匹配平台</p>
-        </header>
-
-        <!-- 用户选择 -->
-        <div class="user-selector">
-            <label for="currentUser">选择你的身份：</label>
-            <select id="currentUser">
-                <option value="">请选择...</option>
-            </select>
+    <header class="site-header">
+        <div class="site-header__content">
+            <h1>Coffee Matcher</h1>
+            <p>Coordinate coffee chats with a FastAPI + SQLModel backend and a lightweight UI.</p>
         </div>
+    </header>
 
-        <!-- 导航标签 -->
-        <div class="tabs">
-            <button class="tab-button active" onclick="showTab('browse')">浏览用户</button>
-            <button class="tab-button" onclick="showTab('requests')">收到的邀请</button>
-            <button class="tab-button" onclick="showTab('sent')">发送的邀请</button>
-        </div>
+    <main class="layout">
+        <div id="status" class="status" role="status" aria-live="polite"></div>
 
-        <!-- 浏览用户标签页 -->
-        <div id="browse" class="tab-content active">
-            <h2>可匹配的用户</h2>
-            <div id="usersList"></div>
-        </div>
+        <section id="auth-view" class="auth-view">
+            <article class="panel">
+                <h2>Sign In</h2>
+                <form id="login-form" class="form-grid">
+                    <label class="form-grid--span">
+                        Email address
+                        <input id="login-email" type="email" placeholder="you@example.com" required>
+                    </label>
+                    <button type="submit">Log In</button>
+                </form>
+                <p class="hint">Use an existing email from the directory or create a new account.</p>
+            </article>
 
-        <!-- 收到的邀请标签页 -->
-        <div id="requests" class="tab-content">
-            <h2>收到的邀请</h2>
-            <div id="receivedRequests"></div>
-        </div>
+            <article class="panel">
+                <h2>Create Account</h2>
+                <form id="register-form" class="form-grid">
+                    <label>
+                        Name
+                        <input id="register-name" type="text" placeholder="Jane Doe" required>
+                    </label>
+                    <label>
+                        Email
+                        <input id="register-email" type="email" placeholder="jane@example.com" required>
+                    </label>
+                    <label>
+                        Location
+                        <input id="register-location" type="text" placeholder="City, Country">
+                    </label>
+                    <label class="form-grid--span">
+                        Bio
+                        <textarea id="register-bio" rows="2" placeholder="Share what you enjoy chatting about."></textarea>
+                    </label>
+                    <button type="submit">Create &amp; Log In</button>
+                </form>
+            </article>
+        </section>
 
-        <!-- 发送的邀请标签页 -->
-        <div id="sent" class="tab-content">
-            <h2>发送的邀请</h2>
-            <div id="sentRequests"></div>
+        <section id="app-view" class="app-view hidden">
+            <div class="app-header">
+                <div class="profile-card">
+                    <div>
+                        <h2 id="profile-name"></h2>
+                        <p id="profile-email" class="muted"></p>
+                    </div>
+                    <div class="profile-meta">
+                        <span id="profile-location" class="badge badge--location"></span>
+                        <button id="logout-button" type="button">Log Out</button>
+                    </div>
+                </div>
+            </div>
+
+            <article class="panel" id="profile-panel">
+                <h3>Edit Profile</h3>
+                <form id="profile-form" class="form-grid">
+                    <label>
+                        Name
+                        <input id="profile-name-input" type="text" required>
+                    </label>
+                    <label>
+                        Email
+                        <input id="profile-email-input" type="email" required disabled>
+                    </label>
+                    <label>
+                        Location
+                        <input id="profile-location-input" type="text" placeholder="City, Country">
+                    </label>
+                    <label class="form-grid--span">
+                        Bio
+                        <textarea id="profile-bio-input" rows="2"></textarea>
+                    </label>
+                    <button type="submit">Save Changes</button>
+                </form>
+            </article>
+
+            <article class="panel" id="availability-panel">
+                <h3>Your Availability</h3>
+                <p class="hint">Pick a day and a 30-minute slot to add your availability.</p>
+                <div class="availability-grid">
+                    <div>
+                        <h4>Select day</h4>
+                        <div id="availability-days" class="chip-group"></div>
+                    </div>
+                    <div>
+                        <h4>Select time</h4>
+                        <div id="availability-times" class="chip-group chip-group--wrap"></div>
+                    </div>
+                </div>
+                <div class="availability-actions">
+                    <button id="availability-confirm" type="button" disabled>Add availability</button>
+                </div>
+                <div id="timeslots-list" class="cards"></div>
+            </article>
+
+            <article class="panel" id="directory-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Directory</h3>
+                        <p class="hint">Browse colleagues and invite them for coffee. Your card is highlighted.</p>
+                    </div>
+                    <button id="refresh-directory" type="button">Refresh</button>
+                </div>
+                <div id="users-list" class="cards"></div>
+            </article>
+
+            <article class="panel" id="matches-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Requests</h3>
+                        <p class="hint">Use the tabs to filter pending, accepted, or rejected invites.</p>
+                    </div>
+                    <div class="match-tabs" role="tablist">
+                        <button type="button" class="tab chip chip--selected" data-match-filter="all">All</button>
+                        <button type="button" class="tab chip" data-match-filter="pending">Pending</button>
+                        <button type="button" class="tab chip" data-match-filter="accepted">Accepted</button>
+                        <button type="button" class="tab chip" data-match-filter="rejected">Rejected</button>
+                    </div>
+                </div>
+                <div class="split-columns">
+                    <div>
+                        <h4>Incoming</h4>
+                        <div id="matches-received" class="cards"></div>
+                    </div>
+                    <div>
+                        <h4>Sent</h4>
+                        <div id="matches-sent" class="cards"></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel" id="venues-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Venues</h3>
+                        <p class="hint">Track suggested spots and add your own favorites.</p>
+                    </div>
+                    <button id="venue-modal-open" type="button">Add venue</button>
+                </div>
+                <div id="venues-list" class="cards"></div>
+            </article>
+        </section>
+    </main>
+
+    <div id="invite-modal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal__content">
+            <button class="modal__close" type="button" aria-label="Close" id="invite-close">×</button>
+            <div class="modal__header">
+                <h3>Create Coffee Chat</h3>
+                <p id="invite-target-meta" class="muted"></p>
+            </div>
+            <form id="invite-form" class="form-grid">
+                <label>
+                    Target availability
+                    <select id="invite-slot" required>
+                        <option value="">Select a time slot…</option>
+                    </select>
+                </label>
+                <label>
+                    Venue
+                    <select id="invite-venue" required>
+                        <option value="">Select a venue…</option>
+                    </select>
+                </label>
+                <label class="form-grid--span">
+                    Message
+                    <textarea id="invite-message" rows="2" placeholder="Let them know what you’d like to discuss."></textarea>
+                </label>
+                <button type="submit">Send Invitation</button>
+            </form>
+            <p id="invite-no-slots" class="hint hidden">This user has no available time slots.</p>
         </div>
     </div>
 
-    <!-- 发起匹配模态框 -->
-    <div id="matchModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>发起匹配邀请</h2>
-            <form id="matchForm">
-                <input type="hidden" id="targetUserId">
-                <div class="form-group">
-                    <label>邀请对象：</label>
-                    <span id="targetUserName"></span>
-                </div>
-                <div class="form-group">
-                    <label for="timeSlotSelect">选择时间：</label>
-                    <select id="timeSlotSelect" required>
-                        <option value="">请选择时间段...</option>
+    <div id="venue-modal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal__content">
+            <button class="modal__close" type="button" aria-label="Close" id="venue-close">×</button>
+            <div class="modal__header">
+                <h3>Add Venue</h3>
+                <p class="muted">Share a coffee shop or restaurant suggestion.</p>
+            </div>
+            <form id="venue-form" class="form-grid">
+                <label>
+                    Name
+                    <input id="venue-name" type="text" required>
+                </label>
+                <label>
+                    Type
+                    <select id="venue-type" required>
+                        <option value="">Select type…</option>
+                        <option value="coffee">Coffee</option>
+                        <option value="restaurant">Restaurant</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label for="venueSelect">选择地点：</label>
-                    <select id="venueSelect" required>
-                        <option value="">请选择餐厅/咖啡店...</option>
+                </label>
+                <label>
+                    Price range
+                    <select id="venue-price">
+                        <option value="">Select…</option>
+                        <option value="$">$</option>
+                        <option value="$$">$$</option>
+                        <option value="$$$">$$$</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label for="venueType">地点类型：</label>
-                    <select id="venueType" onchange="filterVenues()">
-                        <option value="">全部</option>
-                        <option value="coffee">咖啡店</option>
-                        <option value="restaurant">餐厅</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="message">留言：</label>
-                    <textarea id="message" placeholder="想说点什么吗？"></textarea>
-                </div>
-                <button type="submit">发送邀请</button>
+                </label>
+                <label class="form-grid--span">
+                    Location
+                    <input id="venue-location" type="text" placeholder="Neighborhood or address">
+                </label>
+                <label class="form-grid--span">
+                    Description
+                    <textarea id="venue-description" rows="2"></textarea>
+                </label>
+                <button type="submit">Save venue</button>
             </form>
         </div>
     </div>
 
-    <!-- 响应邀请模态框 -->
-    <div id="responseModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>响应邀请</h2>
-            <div id="requestDetails"></div>
-            <div class="response-buttons">
-                <button onclick="respondToMatch('accept')" class="accept-btn">接受</button>
-                <button onclick="respondToMatch('reject')" class="reject-btn">拒绝</button>
-                <button onclick="showRescheduleForm()" class="reschedule-btn">重新安排</button>
-            </div>
-            
-            <div id="rescheduleForm" style="display: none;">
-                <h3>重新安排</h3>
-                <div class="form-group">
-                    <label for="newTimeSlot">新时间：</label>
-                    <select id="newTimeSlot"></select>
-                </div>
-                <div class="form-group">
-                    <label for="newVenue">新地点：</label>
-                    <select id="newVenue"></select>
-                </div>
-                <button onclick="respondToMatch('reschedule')" class="reschedule-confirm-btn">确认重新安排</button>
-            </div>
-        </div>
-    </div>
+    <footer class="site-footer">
+        <p>Powered by FastAPI, SQLModel, and SQLite. Customize the project under <code>app/</code>.</p>
+    </footer>
 
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js" defer></script>
 </body>
 </html>

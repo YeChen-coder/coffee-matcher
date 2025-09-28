@@ -5,17 +5,32 @@ from datetime import datetime, timedelta
 from sqlmodel import select
 
 from app.db.session import init_db, session_scope
-from app.models.match_request import MatchRequest
-from app.models.timeslot import TimeSlot
 from app.models.user import User
 from app.models.user_preference import UserPreference
 from app.models.venue import Venue
+from app.models.timeslot import TimeSlot
+from app.models.match_request import MatchRequest
 
 
 USERS = [
-    {"name": "Alice Chen", "email": "alice@example.com", "bio": "AI engineer focused on ML infrastructure."},
-    {"name": "Ben Liu", "email": "ben@example.com", "bio": "Product manager passionate about user research."},
-    {"name": "Carla Wong", "email": "carla@example.com", "bio": "Design lead exploring immersive experiences."},
+    {
+        "name": "Alice Chen",
+        "email": "alice@example.com",
+        "bio": "AI engineer focused on ML infrastructure.",
+        "location": "San Francisco, CA",
+    },
+    {
+        "name": "Ben Liu",
+        "email": "ben@example.com",
+        "bio": "Product manager passionate about user research.",
+        "location": "Seattle, WA",
+    },
+    {
+        "name": "Carla Wong",
+        "email": "carla@example.com",
+        "bio": "Design lead exploring immersive experiences.",
+        "location": "New York, NY",
+    },
 ]
 
 VENUES = [
