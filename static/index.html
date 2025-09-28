@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Matcher - 职场社交匹配</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☕ Coffee Matcher</h1>
+            <p>专业人士的咖啡/聚餐匹配平台</p>
+        </header>
+
+        <!-- 用户选择 -->
+        <div class="user-selector">
+            <label for="currentUser">选择你的身份：</label>
+            <select id="currentUser">
+                <option value="">请选择...</option>
+            </select>
+        </div>
+
+        <!-- 导航标签 -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('browse')">浏览用户</button>
+            <button class="tab-button" onclick="showTab('requests')">收到的邀请</button>
+            <button class="tab-button" onclick="showTab('sent')">发送的邀请</button>
+        </div>
+
+        <!-- 浏览用户标签页 -->
+        <div id="browse" class="tab-content active">
+            <h2>可匹配的用户</h2>
+            <div id="usersList"></div>
+        </div>
+
+        <!-- 收到的邀请标签页 -->
+        <div id="requests" class="tab-content">
+            <h2>收到的邀请</h2>
+            <div id="receivedRequests"></div>
+        </div>
+
+        <!-- 发送的邀请标签页 -->
+        <div id="sent" class="tab-content">
+            <h2>发送的邀请</h2>
+            <div id="sentRequests"></div>
+        </div>
+    </div>
+
+    <!-- 发起匹配模态框 -->
+    <div id="matchModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>发起匹配邀请</h2>
+            <form id="matchForm">
+                <input type="hidden" id="targetUserId">
+                <div class="form-group">
+                    <label>邀请对象：</label>
+                    <span id="targetUserName"></span>
+                </div>
+                <div class="form-group">
+                    <label for="timeSlotSelect">选择时间：</label>
+                    <select id="timeSlotSelect" required>
+                        <option value="">请选择时间段...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="venueSelect">选择地点：</label>
+                    <select id="venueSelect" required>
+                        <option value="">请选择餐厅/咖啡店...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="venueType">地点类型：</label>
+                    <select id="venueType" onchange="filterVenues()">
+                        <option value="">全部</option>
+                        <option value="coffee">咖啡店</option>
+                        <option value="restaurant">餐厅</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">留言：</label>
+                    <textarea id="message" placeholder="想说点什么吗？"></textarea>
+                </div>
+                <button type="submit">发送邀请</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 响应邀请模态框 -->
+    <div id="responseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>响应邀请</h2>
+            <div id="requestDetails"></div>
+            <div class="response-buttons">
+                <button onclick="respondToMatch('accept')" class="accept-btn">接受</button>
+                <button onclick="respondToMatch('reject')" class="reject-btn">拒绝</button>
+                <button onclick="showRescheduleForm()" class="reschedule-btn">重新安排</button>
+            </div>
+            
+            <div id="rescheduleForm" style="display: none;">
+                <h3>重新安排</h3>
+                <div class="form-group">
+                    <label for="newTimeSlot">新时间：</label>
+                    <select id="newTimeSlot"></select>
+                </div>
+                <div class="form-group">
+                    <label for="newVenue">新地点：</label>
+                    <select id="newVenue"></select>
+                </div>
+                <button onclick="respondToMatch('reschedule')" class="reschedule-confirm-btn">确认重新安排</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
